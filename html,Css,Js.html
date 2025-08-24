@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tapşırıq Siyahısı • HTML + CSS + JS</title>
+  <style>
+    /* ====== CSS (daxili üslub) ====== */
+    :root {
+      --bg: #0b1220;
+      --card: #111a2e;
+      --muted: #8a98b3;
+      --text: #e6ecf8;
+      --accent: #6ea8fe;
+      --accent-2: #7ef0d4;
+      --ring: rgba(126, 240, 212, 0.45);
+      --danger: #ff6b6b;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    [data-theme="light"] {
+      --bg: #f6f8fc;
+      --card: #ffffff;
+      --muted: #52607a;
+      --text: #0d1422;
+      --accent: #2563eb;
+      --accent-2: #059669;
+      --ring: rgba(37, 99, 235, 0.25);
+      --danger: #ef4444;
+      --shadow: 0 10px 25px rgba(0,0,0,.08);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background: radial-gradient(1200px 600px at 80% -10%, rgba(110,168,254,.2), transparent) ,
+                  radial-gradient(1000px 500px at -10% 10%, rgba(126,240,212,.15), transparent),
+                  var(--bg);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 32px 16px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 780px;
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0)) , var(--card);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 22px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      backdrop-filter: blur(8px);
+    }
+    .title {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+    .title .logo {
+      width: 36px; height: 36px;
+      display: grid; place-items: center;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white; font-weight: 800;
+      box-shadow: 0 10px 20px var(--ring);
+    }
+    .muted { color: var(--muted); font-weight: 500; }
+
+    .btn {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,.12);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform .08s ease, background .2s ease, border-color .2s ease;
+    }
+    .btn:hover { border-color: var(--accent); }
+    .btn:active { transform: translateY(1px) scale(0.98); }
+
+    .theme-toggle { display: inline-flex; align-items: center; gap: 8px; }
+
+    .content { padding: 22px; }
+
+    .row { display: grid; gap: 12px; grid-template-columns: 1fr auto; }
+    .input {
+      display: flex; gap: 10px; align-items: center;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 14px; padding: 12px 14px;
+      outline: none;
+      transition: border-color .2s ease, box-shadow .2s ease;
+    }
+    .input:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 6px var(--ring);
+    }
+    .input input { flex: 1; background: transparent; border: 0; outline: none; color: var(--text); font-size: 16px; }
+    .input input::placeholder { color: var(--muted); }
+    .add-btn { background: linear-gradient(135deg, var(--accent), var(--accent-2)); border: none; color: white; padding: 12px 16px; border-radius: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 8px 18px var(--ring); }
+    .add-btn:hover { filter: saturate(1.1); }
+
+    .toolbar {
+      display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-top: 16px; padding: 10px 0 2px;
+    }
+    .search { flex: 1; min-width: 220px; }
+    .search input { width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04); color: var(--text); }
+
+    .filters { display: flex; gap: 8px; }
+    .chip {
+      border: 1px solid rgba(255,255,255,.12);
+      padding: 8px 12px; border-radius: 999px; cursor: pointer; font-size: 14px;
+      background: rgba(255,255,255,.04);
+    }
+    .chip[data-active="true"] { border-color: var(--accent); box-shadow: 0 0 0 4px var(--ring); }
+
+    .list { margin-top: 16px; display: grid; gap: 10px; }
+    .item {
+      display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center;
+      padding: 12px 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.04);
+      transition: transform .12s ease;
+    }
+    .item:hover { transform: translateY(-1px); }
+    .item input[type="checkbox"] { width: 18px; height: 18px; }
+    .item .text { line-height: 1.4; }
+    .item.completed .text { text-decoration: line-through; opacity: .6; }
+    .item .meta { font-size: 12px; color: var(--muted); }
+
+    .icon-btn { border: none; background: transparent; cursor: pointer; padding: 8px; border-radius: 10px; }
+    .icon-btn:hover { background: rgba(255,255,255,.06); }
+    .icon-btn.danger:hover { background: rgba(239,68,68,.1); }
+
+    .empty {
+      border: 1px dashed rgba(255,255,255,.2); border-radius: 14px; padding: 24px; text-align: center; color: var(--muted);
+    }
+
+    .footer { padding: 14px 22px 22px; color: var(--muted); display: flex; justify-content: space-between; align-items: center; }
+    .footer .count { font-weight: 600; color: var(--text); }
+
+    @media (max-width: 560px) {
+      .row { grid-template-columns: 1fr; }
+      .add-btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app" data-theme="dark">
+    <header class="header">
+      <div class="title">
+        <div class="logo">✓</div>
+        <div>
+          <div style="font-size: 18px">Tapşırıq Siyahısı</div>
+          <div class="muted" style="font-size: 12px">HTML + CSS + JavaScript bir faylda</div>
+        </div>
+      </div>
+      <button class="btn theme-toggle" id="themeBtn" aria-label="Tema dəyiş">
+        <span>🌗</span>
+        <span>Tema: <strong id="themeName">Qaranlıq</strong></span>
+      </button>
+    </header>
+
+    <main class="content">
+      <!-- Əlavə et bölməsi -->
+      <div class="row" aria-label="Yeni tapşırıq əlavə et">
+        <label class="input" for="taskInput">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <input id="taskInput" type="text" placeholder="Tapşırıq yazın və Enter basın..." />
+        </label>
+        <button class="add-btn" id="addBtn">Əlavə et</button>
+      </div>
+
+      <!-- Alətlər -->
+      <div class="toolbar">
+        <div class="search">
+          <input id="searchInput" type="search" placeholder="Axtarış..." />
+        </div>
+        <div class="filters" role="tablist" aria-label="Filtrlər">
+          <button class="chip" data-filter="all" data-active="true">Hamısı</button>
+          <button class="chip" data-filter="active">Aktiv</button>
+          <button class="chip" data-filter="completed">Tamamlanmış</button>
+          <button class="chip" id="clearBtn" title="Tamamlanmışları sil">Tamamlanmışları sil</button>
+        </div>
+      </div>
+
+      <!-- Siyahı -->
+      <div id="list" class="list" role="list" aria-live="polite"></div>
+      <div id="empty" class="empty" hidden>Hələ tapşırıq yoxdur. Bir neçəsini əlavə edin ✨</div>
+    </main>
+
+    <footer class="footer">
+      <div>Qısayol: <span class="muted">Enter → əlavə et, Ctrl+K → axtar</span></div>
+      <div>Qalan: <span class="count" id="leftCount">0</span></div>
+    </footer>
+  </div>
+
+  <script>
+    // ====== JavaScript (daxili skript) ======
+    const els = {
+      app: document.getElementById('app'),
+      themeBtn: document.getElementById('themeBtn'),
+      themeName: document.getElementById('themeName'),
+      input: document.getElementById('taskInput'),
+      addBtn: document.getElementById('addBtn'),
+      list: document.getElementById('list'),
+      empty: document.getElementById('empty'),
+      leftCount: document.getElementById('leftCount'),
+      search: document.getElementById('searchInput'),
+      clearBtn: document.getElementById('clearBtn'),
+      chips: Array.from(document.querySelectorAll('.chip[data-filter]')),
+    };
+
+    // Sadə util-lər
+    const storageKey = 'todo-list-az-v1';
+    const state = {
+      items: load() || [],
+      filter: 'all',
+      query: ''
+    };
+
+    function save() { localStorage.setItem(storageKey, JSON.stringify(state.items)); }
+    function load() { try { return JSON.parse(localStorage.getItem(storageKey)); } catch { return []; } }
+
+    function uid() { return Math.random().toString(36).slice(2, 9); }
+
+    function addItem(text) {
+      if (!text || !text.trim()) return;
+      state.items.unshift({ id: uid(), text: text.trim(), done: false, createdAt: Date.now() });
+      save();
+      render();
+    }
+
+    function toggleItem(id) {
+      const it = state.items.find(i => i.id === id);
+      if (it) { it.done = !it.done; save(); render(); }
+    }
+
+    function removeItem(id) {
+      state.items = state.items.filter(i => i.id !== id);
+      save(); render();
+    }
+
+    function clearCompleted() {
+      state.items = state.items.filter(i => !i.done);
+      save(); render();
+    }
+
+    function setFilter(f) { state.filter = f; render(); }
+    function setQuery(q) { state.query = q.toLowerCase(); render(); }
+
+    function formatDate(ts) {
+      const d = new Date(ts);
+      return d.toLocaleString('az-AZ', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+    }
+
+    function filteredItems() {
+      return state.items.filter(i => {
+        const byFilter = state.filter === 'all' ? true : state.filter === 'active' ? !i.done : i.done;
+        const byQuery = !state.query || i.text.toLowerCase().includes(state.query);
+        return byFilter && byQuery;
+      });
+    }
+
+    function updateCounts() {
+      const left = state.items.filter(i => !i.done).length;
+      els.leftCount.textContent = left;
+    }
+
+    function syncEmpty() {
+      const hasItems = filteredItems().length > 0;
+      els.empty.hidden = hasItems;
+    }
+
+    function chipActiveSync() {
+      els.chips.forEach(ch => ch.dataset.active = String(ch.dataset.filter === state.filter));
+    }
+
+    function render() {
+      els.list.innerHTML = '';
+      const items = filteredItems();
+
+      if (items.length === 0) {
+        syncEmpty();
+        updateCounts();
+        chipActiveSync();
+        return;
+      }
+
+      for (const it of items) {
+        const row = document.createElement('div');
+        row.className = 'item' + (it.done ? ' completed' : '');
+        row.role = 'listitem';
+
+        const check = document.createElement('input');
+        check.type = 'checkbox';
+        check.checked = it.done;
+        check.addEventListener('change', () => toggleItem(it.id));
+
+        const block = document.createElement('div');
+        const text = document.createElement('div');
+        text.className = 'text';
+        text.textContent = it.text;
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        meta.textContent = 'Yaradıldı: ' + formatDate(it.createdAt);
+        block.appendChild(text); block.appendChild(meta);
+
+        const del = document.createElement('button');
+        del.className = 'icon-btn danger';
+        del.title = 'Sil';
+        del.innerHTML = '🗑️';
+        del.addEventListener('click', () => removeItem(it.id));
+
+        row.appendChild(check);
+        row.appendChild(block);
+        row.appendChild(del);
+        els.list.appendChild(row);
+      }
+
+      syncEmpty();
+      updateCounts();
+      chipActiveSync();
+    }
+
+    // Tema idarəsi
+    function setTheme(mode) {
+      els.app.dataset.theme = mode;
+      els.themeName.textContent = mode === 'dark' ? 'Qaranlıq' : 'Aydın';
+      localStorage.setItem('theme-mode', mode);
+    }
+
+    function toggleTheme() {
+      const mode = els.app.dataset.theme === 'dark' ? 'light' : 'dark';
+      setTheme(mode);
+    }
+
+    // Hadisələr
+    els.addBtn.addEventListener('click', () => addItem(els.input.value));
+    els.input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { addItem(els.input.value); els.input.value = ''; }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); els.search.focus(); }
+    });
+
+    els.search.addEventListener('input', (e) => setQuery(e.target.value));
+
+    els.chips.forEach(ch => ch.addEventListener('click', () => setFilter(ch.dataset.filter)));
+
+    els.clearBtn.addEventListener('click', clearCompleted);
+
+    els.themeBtn.addEventListener('click', toggleTheme);
+
+    // İlk yüklənmə
+    (function init() {
+      const savedTheme = localStorage.getItem('theme-mode');
+      setTheme(savedTheme || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'));
+      render();
+    })();
+  </script>
+</body>
+</html>
